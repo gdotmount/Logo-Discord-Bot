@@ -28,4 +28,4 @@ class MyClient(discord.Client):
 
 
 client = MyClient()
-client.run('NjkyNDUzMzkxMDkxMzY4MDE3.XnvT6A.RxOMcQn1HV39q285I88Z2Ct_c2E')
+client.run("<Logo Bot's Token>")
