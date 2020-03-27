@@ -1,0 +1,85 @@
+import discord
+import random
+import smtplib, ssl
+
+from discord import message
+
+print("init")
+
+
+class MyClient(discord.Client):
+
+    randomCodeStringGlobal = ""
+    emailContentsGlobal = ""
+
+
+    async def on_ready(self):
+        print('Logged in as')
+        print(self.user.name)
+        print(self.user.id)
+        print('------')
+
+    async def on_message(self, message):
+        # we do not want the bot to reply to itself
+        global emailContents
+        if message.author.id == self.user.id:
+            return
+
+        if message.content.startswith('!help'):
+            messageTo = client.get_user_info()
+            messageCont = "Here is the help menu for SJ's Discord:"
+            await client.send_message(messageTo, messageCont)
+
+        if message.content.startswith("!verify"):
+            messageID = message.id
+            user = client.get_user(messageID)
+            print("user verify ready")
+            await message.channel.send("Welcome to SJ's Discord Server!".format(
+                message) + '\n' + "Please type !confirm, followed by a dash, and then the first part of your strake jesuit email, ex KPRegan20" + '\n' + "Your message should look like this: !confirm-KPRegan20")
+
+        if message.content.startswith("!confirm"):
+            print("data found")
+            emailStart = message.content
+            emailStartStr = str(emailStart)
+            emailStartStr = emailStartStr.replace("!confirm-", '')
+            print(emailStartStr)
+            await message.author.send("Thanks, " + emailStartStr + ". We'll send you an email shortly.")
+            randomCodeString = "1"
+            randomCodeStringTemp = "0"
+            randomCodeInt = 0
+            for i in range(0, 5, 1):
+                randomCodeInt = random.randint(1, 10)
+                randomCodeStringTemp = str(randomCodeInt)
+                randomCodeString += randomCodeStringTemp
+                randomCodeStringGlobal = randomCodeString
+            print(randomCodeStringGlobal)
+            clientEmail = emailStartStr+"@mail.strakejesuit.org"
+            print("sending to"+clientEmail)
+            emailContents = "Here is your verification code for SJ's Discord:" + randomCodeStringGlobal
+            emailContentsGlobal = emailContents
+            print(emailContents)
+
+        smtp_server = "smtp.gmail.com"
+        port = 587  # For starttls
+        sender_email = "sjstucoprojects@gmail.com"
+        password = "mag1s8900"
+
+        # Create a secure SSL context
+        context = ssl.create_default_context()
+
+        # Try to log in to server and send email
+        try:
+            server = smtplib.SMTP(smtp_server, port)
+            server.ehlo()  # Can be omitted
+            server.starttls(context=context)  # Secure the connection
+            server.ehlo()  # Can be omitted
+            server.login(sender_email, password)
+            server.sendmail("sjstucoprojects@gmail.com", clientEmail,emailContentsGlobal)
+        except Exception as e:
+            # Print any error messages to stdout
+            print(e)
+        finally:
+            server.quit()
+
+client = MyClient()
+client.run("NjkyOTU0ODA1NTgwMDcwOTY0.Xn2PWg.oeTaB0o4tkpbWlYYFBZwG-Fhimk")
