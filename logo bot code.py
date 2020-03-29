@@ -2,93 +2,90 @@ import discord
 import random
 import smtplib, ssl
 from discord.ext import commands
-from discord.utils import get
+import logging
 
-class MyClient(discord.Client):
-    smtp_server = "smtp.gmail.com"
-    port = '587'  # For starttls
-    server = smtplib.SMTP(smtp_server, port)
-    sender_email = "sjstucoprojects@gmail.com"
-    password = "mag1s8900"
-    clientemail = ''
-    emailcontents = ''
-    classyear = ''
-    v_code = ''
-    classrole = ''
-    context = ssl.create_default_context()
-    client = commands.Bot(command_prefix='.')
+logging.basicConfig(level=logging.INFO)
 
-    async def on_ready(self):
-        print('Logged in as')
-        print(self.user.name)
-        print(self.user.id)
-        print('------')
+smtp_server = "smtp.gmail.com"
+port = '587'  # For starttls
+server = smtplib.SMTP(smtp_server, port)
+sender_email = "sjstucoprojects@gmail.com"
+password = "mag1s8900"
 
-        async def on_member_join(self, member):
-            guild = member.guild
-            if guild.system_channel is not None:
-                to_send = 'Welcome {0.mention} to {1.name}! Please reply to me with the command, "!confirm-", followed by \
-    the beginning tagline of your Strake Jesuit email to begin verification of your identity.'.format(member, guild)
-                await guild.system_channel.send(to_send)
-                await guild.system_channel.send('As an example, if your Strake Jesuit email was\
-     "gmmount20@mail.strakejesuit.org", you would reply "!confirm-gmmount20"'.format(member, guild))
-
-    async def send_email(self):
-        # Try to log in to server and send email
-        try:
-            self.server.connect(self.smtp_server, self.port)
-            self.server.starttls(context=self.context)  # Secure the connection
-            self.server.login(self.sender_email, self.password)
-            self.server.sendmail('sjstucoprojects@gmail.com', self.clientemail, self.emailcontents)
-        except Exception as e:
-            # Print any error messages to stdout
-            print('STMP Package Error:')
-            print(e)
-        finally:
-            self.server.quit()
-
-    async def on_message(self, message):
-        # we do not want the bot to reply to itself
-        if message.author.id == self.user.id:
-            return
-
-        if message.content.startswith('!fuckme'):
-            await message.channel.send('no {0.author.mention}'.format(message))
-
-        if message.content.startswith("!confirm"):
-            print("data found")
-            tagline = message.content[slice(9, len(message.content))]
-            self.classyear = tagline[slice(len(tagline) - 2, len(tagline))]
-            self.clientemail = tagline + "@mail.strakejesuit.org"
-            print('client: ' + tagline)
-            await message.channel.send("Thanks, {0.author.mention}".format(message) + ". We'll send an email to " + self.clientemail)
-            self.v_code = str(random.randrange(100000, 999999, 1))
-
-            print('Generated random code: ' + self.v_code + '\n' + "Sending to " + self.clientemail)
-            self.emailcontents = "Subject: SJ Discord Verification\n\n" + "Here is your verification code for SJ's Discord: " + self.v_code
-            print('Email Contents: \n' + self.emailcontents)
-            await client.send_email()
+context = ssl.create_default_context()
+client = commands.Bot(command_prefix='.')
 
 
-        if str(message.content) == self.v_code:
-            print(self.classyear)
-            if self.classyear == '20':
-                self.classrole = "Senior"
-            elif self.classyear == '21':
-                self.classrole = "Junior"
-            elif self.classyear == '22':
-                self.classrole = "Sophman"
-            elif self.classyear == '23':
-                self.classrole = "Freshboi"
-            await message.channel.send("You've been verified! Welcome to the server {0.author.mention}".format(message))
+@client.event
+async def on_ready():
+    print('Bot is logged in')
+    print(client.user.name)
+    print(client.user.id)
+    print('------')
 
-            @client.event
-            @.command(pass_context=True)
-            async def addrole(ctx):
-                member = ctx.message.author
-                role = get(member.guild.roles, name=self.classrole)
-                await self.Bot.add_roles(member, role)
 
-client = MyClient()
-client.run('NjkyNDUzMzkxMDkxMzY4MDE3.Xn5Nmg.OeOssOQPMKnGEDa9UH_Z0dWeHmc')
+@client.event
+async def on_member_join(member):
+    guild = member.guild
+    if guild.system_channel is not None:
+        to_send = 'Welcome {0.mention} to {1.name}! Please reply to me with the command, ".confirm ", followed by \
+the beginning tagline of your Strake Jesuit email to begin verification of your identity.'.format(member, guild)
+        await guild.system_channel.send(to_send)
+        await guild.system_channel.send('As an example, if your Strake Jesuit email was\
+ "gmmount20@mail.strakejesuit.org", you would reply ".confirm gmmount20"')
 
+
+@client.command(pass_context=True)
+async def confirm(ctx, tagline):
+    print('Data found')
+    ctx.message.author.classyear = tagline[slice(len(tagline) - 2, len(tagline))]
+    clientemail = tagline + '@mail.strakejesuit.org'
+    print('Client: ' + tagline)
+    await ctx.send("Thanks, {0.author.mention}".format(ctx) + ". We'll send an email to " + clientemail)
+    ctx.message.author.v_code = random.randrange(100000, 999999, 1)
+    print(f'Generated random code for {ctx.message.author} at {clientemail}: {ctx.message.author.v_code}')
+    emailcontents = f"Subject: SJ Discord Verification\n\nHere is your verification code for SJ's Discord: {ctx.message.author.v_code}"
+    print(f'Email Contents:\n {emailcontents}')
+    await client.send_email(clientemail, emailcontents)
+
+
+@client.event
+async def send_email(cemail, emailc):
+    # Try to log in to server and send email
+    try:
+        server.connect(smtp_server, port)
+        server.starttls(context=context)  # Secure the connection
+        server.login(sender_email, password)
+        server.sendmail('sjstucoprojects@gmail.com', cemail, emailc)
+    except Exception as e:
+        # Print any error messages to stdout
+        print('STMP Package Error:')
+        print(e)
+    finally:
+        server.quit()
+
+
+@client.command(pass_context=True)
+async def code(ctx, code_entry):
+    print(f'Code received, checking authenticity against {ctx.message.author.v_code}...')
+    if code_entry == str(ctx.message.author.v_code):
+        print('Correct code, accepted\nChanging member role...')
+        await ctx.send(f'Thanks for verifying, {ctx.author.mention}, welcome to the server!')
+        if ctx.message.author.classyear =='20':
+            classrole = 'Senior'
+        elif ctx.message.author.classyear == '21':
+            classrole = 'Junior'
+        elif ctx.message.author.classyear == '22':
+            classrole = 'Sophman'
+        elif ctx.message.author.classyear == '23':
+            classrole = 'Freshboi'
+        role = discord.utils.get(ctx.message.author.guild.roles, name=classrole)
+        print(f'Correct role identified: {classrole}')
+        await ctx.message.author.add_roles(role)
+        print('Role assigned')
+    else:
+        print('Code not accepted')
+        await ctx.send('Your code was not accepted, please either enter your code again or request a new one')
+
+
+client.run('NjkyNDUzMzkxMDkxMzY4MDE3.Xn_Shg.1WyuFF5gpXGRRD_CadrBAYy6XNM')
