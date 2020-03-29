@@ -90,4 +90,4 @@ async def code(ctx, code_entry):
         await ctx.send('Your code was not accepted, please either enter your code again or request a new one')
 
 
-client.run('NjkyNDUzMzkxMDkxMzY4MDE3.Xn_Shg.1WyuFF5gpXGRRD_CadrBAYy6XNM')
+client.run('TOKEN')
