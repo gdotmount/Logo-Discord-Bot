@@ -42,6 +42,8 @@ async def confirm(ctx, tagline):
     clientemail = tagline + '@mail.strakejesuit.org'
     print('Client: ' + tagline)
     await ctx.send("Thanks, {0.author.mention}".format(ctx) + ". We'll send an email to " + clientemail)
+    #for the v_code and classyear to be set as an attribute to the member object, you must go to the "Member" class at the the file hosted at site-packages\discord\member.py
+    #you must then add ", 'v_code', 'classyear'" as the last items in the "__slots__" list; you must also add "self.v_code = 0" underneath the "__init__" method below
     ctx.message.author.v_code = random.randrange(100000, 999999, 1)
     print(f'Generated random code for {ctx.message.author} at {clientemail}: {ctx.message.author.v_code}')
     emailcontents = f"Subject: SJ Discord Verification\n\nHere is your verification code for SJ's Discord: {ctx.message.author.v_code}"
