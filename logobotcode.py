@@ -80,13 +80,13 @@ async def code(ctx, code_entry):
             print('Correct code, user verified\nAdding user member role...')
             await ctx.send(f'Thanks for verifying, {ctx.author.mention}, welcome to the server!')
             if ctx.author.classyear =='20':
-                classrole = 'Senior'
+                classrole = 'Senman'
             elif ctx.author.classyear == '21':
-                classrole = 'Junior'
+                classrole = 'Junman'
             elif ctx.author.classyear == '22':
                 classrole = 'Sophman'
-            elif ctx.author.classyear == '23':
-                classrole = 'Freshboi'
+            else: classrole = 'Freshman'
+
             role = discord.utils.get(ctx.guild.roles, name=classrole)
             print(f'Role identified: {classrole}')
             await ctx.author.add_roles(role)
@@ -106,7 +106,7 @@ async def clear(ctx, amount=1):
     channel = ctx.message.channel
     print (channel.history(limit = int(amount)))
     async for msg in channel.history(limit = int(amount)):
-        print(msg.id)
+        print(f'"{msg.content}"')
         a += 1
         await msg.delete()
     print(f'{amount} message(s) deleted')
@@ -116,8 +116,7 @@ async def clear(ctx, amount=1):
 async def on_message(message):
     if message.author.id == client.user.id:
         return
-    v_student_list = open("verified_student_list.txt", 'r')
-    if str(message.channel) == 'welcome-verify':
+    if str(message.channel) == 'welcome-verify' and str(message.author).lower() != 'mee6#4876':
         await message.delete()
     if 'logo' and 'bot' and 'who is your dad' in message.content and message.channel.id:
         await message.channel.send("They're literally listed to the fucking right")
